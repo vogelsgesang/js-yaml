@@ -28,7 +28,7 @@ module.exports.dump                = dumper.dump;
 module.exports.safeDump            = dumper.safeDump;
 module.exports.YAMLException       = require('./js-yaml/exception');
 
-// Deprecared schema names from JS-YAML 2.0.x
+// Deprecated schema names from JS-YAML 2.0.x
 module.exports.MINIMAL_SCHEMA = require('./js-yaml/schema/failsafe');
 module.exports.SAFE_SCHEMA    = require('./js-yaml/schema/default_safe');
 module.exports.DEFAULT_SCHEMA = require('./js-yaml/schema/default_full');
@@ -820,10 +820,6 @@ function writeNode(state, level, object, block, compact, iskey) {
     block = (0 > state.flowLevel || state.flowLevel > level);
   }
 
-  if ((null !== state.tag && '?' !== state.tag) || (2 !== state.indent && level > 0)) {
-    compact = false;
-  }
-
   var objectOrArray = '[object Object]' === type || '[object Array]' === type,
       duplicateIndex,
       duplicate;
@@ -832,6 +828,11 @@ function writeNode(state, level, object, block, compact, iskey) {
     duplicateIndex = state.duplicates.indexOf(object);
     duplicate = duplicateIndex !== -1;
   }
+
+  if ((null !== state.tag && '?' !== state.tag) || duplicate || (2 !== state.indent && level > 0)) {
+    compact = false;
+  }
+
 
   if (duplicate && state.usedDuplicates[duplicateIndex]) {
     state.dump = '*ref_' + duplicateIndex;
@@ -843,7 +844,7 @@ function writeNode(state, level, object, block, compact, iskey) {
       if (block && (0 !== Object.keys(state.dump).length)) {
         writeBlockMapping(state, level, state.dump, compact);
         if (duplicate) {
-          state.dump = '&ref_' + duplicateIndex + (0 === level ? '\n' : '') + state.dump;
+          state.dump = '&ref_' + duplicateIndex + state.dump;
         }
       } else {
         writeFlowMapping(state, level, state.dump);
@@ -855,7 +856,7 @@ function writeNode(state, level, object, block, compact, iskey) {
       if (block && (0 !== state.dump.length)) {
         writeBlockSequence(state, level, state.dump, compact);
         if (duplicate) {
-          state.dump = '&ref_' + duplicateIndex + (0 === level ? '\n' : '') + state.dump;
+          state.dump = '&ref_' + duplicateIndex + state.dump;
         }
       } else {
         writeFlowSequence(state, level, state.dump);
@@ -3949,7 +3950,16 @@ module.exports = new Type('tag:yaml.org,2002:timestamp', {
   represent: representYamlTimestamp
 });
 
-},{"../type":13}],30:[function(require,module,exports){
+},{"../type":13}],"/":[function(require,module,exports){
+'use strict';
+
+
+var yaml = require('./lib/js-yaml.js');
+
+
+module.exports = yaml;
+
+},{"./lib/js-yaml.js":1}],30:[function(require,module,exports){
 
 },{}],31:[function(require,module,exports){
 if (typeof Object.create === 'function') {
@@ -4027,7 +4037,7 @@ process.nextTick = function (fun) {
         }
     }
     queue.push(new Item(fun, args));
-    if (!draining) {
+    if (queue.length === 1 && !draining) {
         setTimeout(drainQueue, 0);
     }
 };
@@ -4665,14 +4675,5 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":33,"_process":32,"inherits":31}],"/":[function(require,module,exports){
-'use strict';
-
-
-var yaml = require('./lib/js-yaml.js');
-
-
-module.exports = yaml;
-
-},{"./lib/js-yaml.js":1}]},{},[])("/")
+},{"./support/isBuffer":33,"_process":32,"inherits":31}]},{},[])("/")
 });
